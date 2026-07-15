@@ -16,60 +16,6 @@ function formatDate(value: Date) {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
-=======
-  return value
-    .toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    })
-    .toUpperCase();
-}
-
-function fittedSize(
-  text: string,
-  font: PDFFont,
-  preferredSize: number,
-  maxWidth: number,
-  minimumSize = 10,
-) {
-  let size = preferredSize;
-
-  while (
-    size > minimumSize &&
-    font.widthOfTextAtSize(text, size) > maxWidth
-  ) {
-    size -= 0.5;
-  }
-
-  return size;
-}
-
-function drawCentredText({
-  page,
-  text,
-  font,
-  size,
-  y,
-  colour = rgb(0.05, 0.05, 0.08),
-}: {
-  page: PDFPage;
-  text: string;
-  font: PDFFont;
-  size: number;
-  y: number;
-  colour?: ReturnType<typeof rgb>;
-}) {
-  const width = font.widthOfTextAtSize(text, size);
-
-  page.drawText(text, {
-    x: (page.getWidth() - width) / 2,
-    y,
-    size,
-    font,
-    color: colour,
->>>>>>> b7601a96c35be913a1840908bf53d15102366799
-  });
 }
 
 function fittedSize(text: string, font: PDFFont, preferred: number, maxWidth: number, minimum = 8) {
