@@ -1,11 +1,11 @@
 import { notFound, redirect } from 'next/navigation';
-import { requireUser } from '@/lib/auth';
+import { requireActiveUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { Shell } from '@/components/shell';
 import { QuizPlayer } from '@/components/quiz/quiz-player';
 
 export default async function QuizPage({ params }: { params: Promise<{ lessonId: string }> }) {
-  const user = await requireUser();
+  const user = await requireActiveUser();;
   const { lessonId } = await params;
   const quiz = await db.quiz.findUnique({ where: { lessonId }, include: { questions: { include: { options: { select: { id: true, text: true, position: true } } }, orderBy: { position: 'asc' } } } });
   if (!quiz) notFound();
