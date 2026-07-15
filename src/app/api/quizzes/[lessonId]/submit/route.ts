@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireUser } from '@/lib/auth';
+import { requireActiveUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { syncCourseCompletion } from '@/lib/quiz';
 import { z } from 'zod';
@@ -7,7 +7,7 @@ import { z } from 'zod';
 const schema = z.object({ answers: z.array(z.object({ questionId: z.string(), optionId: z.string() })) });
 
 export async function POST(request: Request, { params }: { params: Promise<{ lessonId: string }> }) {
-  const user = await requireUser();
+  const user = await requireActiveUser();
   const { lessonId } = await params;
   const input = schema.safeParse(await request.json());
   if (!input.success) return NextResponse.json({ error: 'Invalid answers.' }, { status: 400 });
