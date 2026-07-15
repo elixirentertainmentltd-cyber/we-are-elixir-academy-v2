@@ -1,0 +1,3 @@
+import { UserStatus, Role } from '@prisma/client'; import { z } from 'zod'; import { requireAdmin } from '@/lib/auth'; import { db } from '@/lib/db'; import { jsonError } from '@/lib/http';
+const schema=z.object({status:z.nativeEnum(UserStatus).optional(),role:z.nativeEnum(Role).optional()}).refine(v=>v.status||v.role);
+export async function PATCH(req:Request,{params}:{params:Promise<{id:string}>}){await requireAdmin();try{const data=schema.parse(await req.json());const {id}=await params;const user=await db.user.update({where:{id},data});return Response.json({user});}catch(e){console.error(e);return jsonError('Unable to update user.',400)}}

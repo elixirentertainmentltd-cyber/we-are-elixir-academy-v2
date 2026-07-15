@@ -1,0 +1,1 @@
+import { db } from '@/lib/db'; export async function GET(){const started=Date.now();try{await db.$queryRaw`SELECT 1`;return Response.json({ok:true,database:'connected',latencyMs:Date.now()-started})}catch(e){console.error('DB health failed',e);return Response.json({ok:false,database:'unavailable'},{status:503})}}
