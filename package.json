@@ -2,11 +2,13 @@
   "name": "we-are-elixir-academy-v2",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": ">=20.9.0" },
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "hostinger-build": "node scripts/check-database-url.js && prisma generate && prisma db push && npm run db:seed && next build"
+    "hostinger-build": "node scripts/check-database-url.js && prisma generate && prisma db push && npm run db:seed && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
@@ -14,7 +16,9 @@
     "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate"
   },
-  "prisma": { "seed": "tsx prisma/seed.ts" },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "6.9.0",
     "bcryptjs": "^3.0.2",
