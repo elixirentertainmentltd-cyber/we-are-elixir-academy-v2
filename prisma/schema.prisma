@@ -52,6 +52,13 @@ model User {
   passwordHash String
   role         Role       @default(LEARNER)
   status       UserStatus @default(PENDING)
+  avatarUrl    String?
+  coverUrl     String?
+  bio          String?    @db.Text
+  skills       String?    @db.Text
+  socialLinks  Json?
+  publicProfile Boolean   @default(false)
+  profileSlug  String?    @unique
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   sessions     Session[]
@@ -59,6 +66,13 @@ model User {
   enrollments  Enrollment[]
   quizAttempts QuizAttempt[]
   certificates Certificate[]
+  mediaUploads MediaAsset[]
+  submissions AssignmentSubmission[]
+  badges UserBadge[]
+  notifications Notification[]
+  posts DiscussionPost[]
+  eventRsvps EventRsvp[]
+  auditLogs AuditLog[]
 
   @@index([status])
 }
@@ -104,6 +118,7 @@ model Course {
   modules            Module[]
   enrollments        Enrollment[]
   certificates       Certificate[]
+  assignments        Assignment[]
 
   @@index([categoryId, status])
   @@index([featured, status])
@@ -138,6 +153,8 @@ model Lesson {
   progress         Progress[]
   blocks           LessonBlock[]
   quiz             Quiz?
+  assignments      Assignment[]
+  discussionPosts  DiscussionPost[]
 
   @@unique([moduleId, slug])
   @@unique([moduleId, position])
@@ -255,4 +272,172 @@ model Certificate {
   @@unique([userId, courseId])
   @@index([courseId, issuedAt])
   @@index([userId, issuedAt])
+}
+
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  NEEDS_CHANGES
+  APPROVED
+  REJECTED
+}
+
+enum MediaKind {
+  IMAGE
+  PDF
+  VIDEO
+  AUDIO
+  DOCUMENT
+  ARCHIVE
+  OTHER
+}
+
+model MediaAsset {
+  id           String    @id @default(cuid())
+  name         String
+  originalName String
+  url          String
+  mimeType     String
+  sizeBytes    Int
+  kind         MediaKind
+  folder       String    @default("General")
+  uploadedById String
+  createdAt    DateTime  @default(now())
+  uploadedBy   User      @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([kind, createdAt])
+  @@index([uploadedById])
+}
+
+model Assignment {
+  id             String   @id @default(cuid())
+  title          String
+  instructions   String   @db.LongText
+  lessonId       String?
+  courseId       String
+  dueAt          DateTime?
+  maxFileSizeMb  Int      @default(25)
+  allowedTypes   String   @default("image/*,application/pdf,video/*")
+  published      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  course         Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson         Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  submissions    AssignmentSubmission[]
+
+  @@index([courseId, published])
+  @@index([lessonId])
+}
+
+model AssignmentSubmission {
+  id           String           @id @default(cuid())
+  assignmentId String
+  userId       String
+  status       SubmissionStatus @default(DRAFT)
+  textAnswer   String?          @db.LongText
+  linkUrl      String?
+  fileUrls     Json?
+  grade        String?
+  feedback     String?          @db.Text
+  version      Int              @default(1)
+  submittedAt  DateTime?
+  reviewedAt   DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  assignment   Assignment       @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, userId])
+  @@index([status, submittedAt])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String
+  icon        String   @default("Award")
+  createdAt   DateTime @default(now())
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  awardedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String   @db.Text
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+}
+
+model DiscussionPost {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String?
+  title     String
+  body      String   @db.LongText
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([pinned, createdAt])
+  @@index([lessonId, createdAt])
+}
+
+model AcademyEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  startsAt    DateTime
+  endsAt      DateTime
+  location    String?
+  externalUrl String?
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  rsvps       EventRsvp[]
+
+  @@index([published, startsAt])
+}
+
+model EventRsvp {
+  id        String       @id @default(cuid())
+  eventId   String
+  userId    String
+  createdAt DateTime     @default(now())
+  event     AcademyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }

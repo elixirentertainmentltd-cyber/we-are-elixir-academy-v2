@@ -58,5 +58,18 @@ async function seedLearning() {
   }
 }
 
-async function main(){ await seedAdmin(); await seedLearning(); console.log('Academy learning data ready.'); }
+async function seedV1Badges() {
+  const badges = [
+    ['first-course','First Course','Completed a first course','GraduationCap'],
+    ['quiz-master','Quiz Master','Passed a quiz','Brain'],
+    ['perfect-score','Perfect Score','Scored 100% on a quiz','Trophy'],
+    ['assignment-ready','Assignment Ready','Had an assignment approved','FileCheck2'],
+    ['community-voice','Community Voice','Posted in the Academy community','MessageSquare'],
+  ];
+  for (const [slug,name,description,icon] of badges) {
+    await db.badge.upsert({ where: { slug }, update: { name, description, icon }, create: { slug, name, description, icon } });
+  }
+}
+
+async function main(){ await seedAdmin(); await seedLearning(); await seedV1Badges(); console.log('Academy V1.0 data ready.'); }
 main().finally(()=>db.$disconnect());

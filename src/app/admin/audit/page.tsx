@@ -1,0 +1,3 @@
+import { requireAdmin } from '@/lib/auth';import { db } from '@/lib/db';import { Shell } from '@/components/shell';
+export const dynamic='force-dynamic';
+export default async function Audit(){const user=await requireAdmin();const logs=await db.auditLog.findMany({include:{user:true},orderBy:{createdAt:'desc'},take:250});return <Shell user={user}><div className="page-title"><p className="eyebrow">SECURITY</p><h1>Audit log</h1></div><div className="table-wrap"><table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th></tr></thead><tbody>{logs.map(l=><tr key={l.id}><td>{l.createdAt.toLocaleString('en-GB')}</td><td>{l.user?.email||'System'}</td><td>{l.action}</td><td>{l.entity} {l.entityId||''}</td></tr>)}</tbody></table></div></Shell>}
