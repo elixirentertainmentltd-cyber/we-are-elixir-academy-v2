@@ -1,0 +1,11 @@
+WE ARE ELIXIR ACADEMY - CERTIFICATE DISPLAY FIX
+
+1. Extract this ZIP.
+2. Copy the included src and public folders over the same folders in your repository.
+3. Keep your existing .git folder and package-lock.json.
+4. Commit and push.
+
+Suggested commit message:
+Fix certificate layout and PDF positioning
+
+No database changes or new packages are required.
