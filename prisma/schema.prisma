@@ -58,6 +58,7 @@ model User {
   progress     Progress[]
   enrollments  Enrollment[]
   quizAttempts QuizAttempt[]
+  certificates Certificate[]
 
   @@index([status])
 }
@@ -102,6 +103,7 @@ model Course {
   category           Category     @relation(fields: [categoryId], references: [id])
   modules            Module[]
   enrollments        Enrollment[]
+  certificates       Certificate[]
 
   @@index([categoryId, status])
   @@index([featured, status])
@@ -239,4 +241,18 @@ model QuizAttempt {
 
   @@index([quizId, userId, submittedAt])
   @@index([userId, passed])
+}
+
+model Certificate {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  userId      String
+  courseId    String
+  issuedAt    DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([courseId, issuedAt])
+  @@index([userId, issuedAt])
 }
