@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BarChart3, BookOpen, GraduationCap, LayoutDashboard, ListChecks, Menu, PencilRuler, Users } from 'lucide-react';
+import { BarChart3, BookOpen, GraduationCap, LayoutDashboard, Menu, PencilRuler, Users } from 'lucide-react';
 import { LogoutButton } from './logout-button';
 
 export function Shell({ children, user }: { children: React.ReactNode; user: { name: string; role: string } }) {
@@ -7,7 +7,6 @@ export function Shell({ children, user }: { children: React.ReactNode; user: { n
     <Link href="/dashboard"><LayoutDashboard /> Dashboard</Link>
     <Link href="/courses"><BookOpen /> Courses</Link>
     {user.role === 'ADMIN' && <Link href="/admin/builder"><PencilRuler /> Course Studio</Link>}
-    {user.role === 'ADMIN' && <Link href="/admin/quizzes"><ListChecks /> Quizzes</Link>}
     {user.role === 'ADMIN' && <Link href="/admin/quiz-results"><BarChart3 /> Quiz Results</Link>}
     {user.role === 'ADMIN' && <Link href="/admin/users"><Users /> Users</Link>}
   </>;

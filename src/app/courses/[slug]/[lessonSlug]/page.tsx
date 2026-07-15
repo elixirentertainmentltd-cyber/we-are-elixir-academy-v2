@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Clock3, Download, HelpCircle, Video } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Clock3, Download, ListChecks, Video } from 'lucide-react';
 import { requireActiveUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { Shell } from '@/components/shell';
@@ -20,7 +20,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
             orderBy: { position: 'asc' },
             include: {
               blocks: { orderBy: { position: 'asc' } },
-              quiz: { select: { id: true, title: true, published: true, passScore: true } },
+              quiz: { select: { id: true, title: true, instructions: true, published: true } },
             },
           },
         },
@@ -29,7 +29,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   });
   if (!course) notFound();
 
-  const lessons = course.modules.flatMap((module) => module.lessons.map((lesson) => ({ ...lesson, moduleTitle: module.title })));
+  const lessons = course.modules.flatMap((module) => module.lessons.map((lesson) => ({ ...lesson, moduleTitle: module.title })) ;
   const currentIndex = lessons.findIndex((lesson) => lesson.slug === lessonSlug);
   if (currentIndex < 0) notFound();
   const lesson = lessons[currentIndex];
@@ -44,14 +44,14 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   const previous = lessons[currentIndex - 1];
   const next = lessons[currentIndex + 1];
   const blocks = lesson.blocks.map((block) => ({ ...block, data: block.data as Record<string, unknown> }));
-  const hasPublishedQuiz = Boolean(lesson.quiz?.published);
+  const hasQuiz = Boolean(lesson.quiz?.published);
 
   return <Shell user={user}>
     <div className="lesson-layout">
       <aside className="lesson-sidebar">
         <Link href={`/courses/${course.slug}`} className="back-link"><ArrowLeft /> Course overview</Link>
         <p className="eyebrow">{course.title}</p>
-        {course.modules.map((module) => <div key={module.id} className="sidebar-module"><strong>{module.title}</strong>{module.lessons.map((item) => <Link className={item.id === lesson.id ? 'active' : ''} key={item.id} href={`/courses/${course.slug}/${item.slug}`}>{item.title}{item.quiz?.published && <span className="sidebar-quiz-mark"> · Quiz</span>}</Link>)}</div>)}
+        {course.modules.map((module) => <div key={module.id} className="sidebar-module"><strong>{module.title}</strong>{module.lessons.map((item) => <Link className={item.id === lesson.id ? 'active' : ''} key={item.id} href={`/courses/${course.slug}/${item.slug}`}>{item.title}{item.quiz?.published ? ' · Quiz' : ''}</Link>)}</div>)}
       </aside>
       <article className="lesson-content">
         <p className="eyebrow">{lesson.moduleTitle}</p>
@@ -63,9 +63,10 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
           {lesson.resourceUrl && <a className="resource-box" href={lesson.resourceUrl} target="_blank" rel="noreferrer"><Download /> Download resource</a>}
         </>}
 
-        {hasPublishedQuiz ? <section className="lesson-quiz-panel">
-          <div><span className="lesson-quiz-icon"><HelpCircle /></span><div><p className="eyebrow">LESSON QUIZ</p><h2>{lesson.quiz?.title}</h2><p>Score at least {lesson.quiz?.passScore}% to complete this lesson.</p></div></div>
-          <Link className="primary" href={`/quizzes/${lesson.id}`}>{progress?.completed ? 'View quiz result' : 'Take quiz'} <ArrowRight /></Link>
+        {hasQuiz ? <section className="resource-box" style={{ display: 'grid', justifyItems: 'start' }}>
+          <ListChecks />
+          <div><strong>{lesson.quiz?.title}</strong><p style={{ margin: '.35rem 0' }}>{lesson.quiz?.instructions || 'Pass this quiz to complete the lesson.'}</p></div>
+          <Link className="primary" href={`/quizzes/${lesson.id}`}>{progress?.completed ? 'Review quiz' : 'Take quiz'}</Link>
         </section> : <CompleteLessonButton lessonId={lesson.id} completed={Boolean(progress?.completed)} />}
 
         <nav className="lesson-nav">
