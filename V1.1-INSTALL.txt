@@ -1,0 +1,11 @@
+WE ARE ELIXIR ACADEMY V1.1
+
+1. Back up the live repository.
+2. Copy this package over the repository, keeping the existing .git folder.
+3. Keep the build command:
+   prisma generate && prisma db push && next build
+4. Commit and push.
+
+This update adds per-user colour/font/language settings, profile editing and password changes, category management, role and password administration, record deletion, discussion moderation, permanent course deletion, and grouped navigation.
+
+Do not add --accept-data-loss.

@@ -1,39 +1,16 @@
 import Link from 'next/link';
-import {
-  Award, BarChart3, Bell, BookOpen, CalendarDays, FileCheck2, FolderOpen, GraduationCap,
-  LayoutDashboard, Menu, MessageSquare, Palette, PencilRuler, Search, ShieldCheck, UserRound, Users
-} from 'lucide-react';
+import { Bell, BookOpen, CalendarDays, ChevronDown, FileCheck2, GraduationCap, LayoutDashboard, Menu, MessageSquare, Search, Settings, ShieldCheck, UserRound } from 'lucide-react';
 import { LogoutButton } from './logout-button';
 
-export function Shell({ children, user }: { children: React.ReactNode; user: { name: string; role: string } }) {
-  const links = <>
-    <Link href="/dashboard"><LayoutDashboard /> Dashboard</Link>
-    <Link href="/courses"><BookOpen /> Courses</Link>
-    <Link href="/assignments"><FileCheck2 /> Assignments</Link>
-    <Link href="/community"><MessageSquare /> Community</Link>
-    <Link href="/events"><CalendarDays /> Events</Link>
-    <Link href="/certificates"><GraduationCap /> Certificates</Link>
-    <Link href="/profile"><UserRound /> Profile</Link>
-    <Link href="/notifications"><Bell /> Notifications</Link>
-    <Link href="/search"><Search /> Search</Link>
-    {user.role === 'ADMIN' && <Link href="/admin/builder"><PencilRuler /> Course Studio</Link>}
-    {user.role === 'ADMIN' && <Link href="/admin/media"><FolderOpen /> Media</Link>}
-    {user.role === 'ADMIN' && <Link href="/admin/assignments"><FileCheck2 /> Assignment Admin</Link>}
-    {user.role === 'ADMIN' && <Link href="/admin/reports"><BarChart3 /> Reports</Link>}
-    {user.role === 'ADMIN' && <Link href="/admin/certificates"><ShieldCheck /> Certificates</Link>}
-    {user.role === 'ADMIN' && <Link href="/admin/certificate-designer"><Palette /> Certificate Designer</Link>}
-    {user.role === 'ADMIN' && <Link href="/admin/quiz-results"><Award /> Quiz Results</Link>}
-    {user.role === 'ADMIN' && <Link href="/admin/audit"><ShieldCheck /> Audit Log</Link>}
-    {user.role === 'ADMIN' && <Link href="/admin/users"><Users /> Users</Link>}
-  </>;
+type ShellUser={name:string;role:string;pageColour?:string|null;accentColour?:string|null;textColour?:string|null;fontFamily?:string|null;language?:string|null};
 
-  return <div className="app-shell">
-    <header>
-      <Link href="/dashboard" className="brand"><span className="brand-mark"><GraduationCap /></span><span>Elixir Academy</span></Link>
-      <details className="mobile-menu"><summary aria-label="Open navigation"><Menu /></summary><nav>{links}<LogoutButton /></nav></details>
-      <nav className="desktop-nav">{links}<span className="user-chip">{user.name}</span><LogoutButton /></nav>
-    </header>
-    <main className="container">{children}</main>
-    <footer><span>We Are Elixir Academy</span><span>Learn. Grow. Create.</span></footer>
-  </div>;
+export function Shell({children,user}:{children:React.ReactNode;user:ShellUser}){
+ const style={
+  '--page-colour':user.pageColour||'#f7faff','--accent-colour':user.accentColour||'#246bfd','--text-colour':user.textColour||'#10243e','--user-font':user.fontFamily||'Arial'
+ } as React.CSSProperties;
+ const learning=<><Link href="/courses"><BookOpen/>Courses</Link><Link href="/assignments"><FileCheck2/>Assignments</Link><Link href="/certificates"><GraduationCap/>Certificates</Link></>;
+ const community=<><Link href="/community"><MessageSquare/>Discussions</Link><Link href="/events"><CalendarDays/>Events</Link></>;
+ const account=<><Link href="/profile"><UserRound/>My profile</Link><Link href="/settings"><Settings/>Settings</Link><Link href="/notifications"><Bell/>Notifications</Link></>;
+ const admin=user.role==='ADMIN'?<><Link href="/admin/builder">Course Studio</Link><Link href="/admin/categories">Categories</Link><Link href="/admin/users">Users</Link><Link href="/admin/quiz-results">Quiz Results</Link><Link href="/admin/certificates">Certificate Records</Link><Link href="/admin/certificate-designer">Certificate Designer</Link><Link href="/admin/assignments">Assignments</Link><Link href="/admin/media">Media</Link><Link href="/admin/reports">Reports</Link><Link href="/admin/audit">Audit Log</Link></>:null;
+ return <div className="app-shell themed-shell" style={style} lang={user.language||'en'}><header><Link href="/dashboard" className="brand"><span className="brand-mark"><GraduationCap/></span><span>Elixir Academy</span></Link><details className="mobile-menu"><summary aria-label="Open navigation"><Menu/></summary><nav><Link href="/dashboard"><LayoutDashboard/>Dashboard</Link>{learning}{community}{account}{admin}<Link href="/search"><Search/>Search</Link><LogoutButton/></nav></details><nav className="desktop-nav tidy-nav"><Link href="/dashboard"><LayoutDashboard/>Dashboard</Link><details className="nav-dropdown"><summary>Learning <ChevronDown/></summary><div>{learning}</div></details><details className="nav-dropdown"><summary>Community <ChevronDown/></summary><div>{community}</div></details><details className="nav-dropdown"><summary>Account <ChevronDown/></summary><div>{account}</div></details>{user.role==='ADMIN'&&<details className="nav-dropdown"><summary><ShieldCheck/> Admin <ChevronDown/></summary><div>{admin}</div></details>}<Link href="/search"><Search/>Search</Link><span className="user-chip">{user.name}</span><LogoutButton/></nav></header><main className="container">{children}</main><footer><span>We Are Elixir Academy</span><span>Learn. Grow. Create.</span></footer></div>
 }

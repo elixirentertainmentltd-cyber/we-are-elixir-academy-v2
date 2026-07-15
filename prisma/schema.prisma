@@ -77,6 +77,12 @@ model User {
   socialLinks   Json?
   publicProfile Boolean    @default(false)
   profileSlug   String?
+  pageColour   String     @default("#f7faff")
+  accentColour String     @default("#246bfd")
+  textColour   String     @default("#10243e")
+  fontFamily   String     @default("Arial")
+  language     String     @default("en")
+  forcePasswordChange Boolean @default(false)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 

@@ -67,3 +67,5 @@ export async function PATCH(request: Request, { params }: Params) {
     return apiErrorResponse(error);
   }
 }
+
+export async function DELETE(_request:Request,{params}:Params){try{await requireAdminApi();const{courseId}=await params;await db.course.delete({where:{id:courseId}});return Response.json({ok:true});}catch(error){return apiErrorResponse(error)}}

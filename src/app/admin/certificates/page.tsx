@@ -1,10 +1,2 @@
-import Link from 'next/link';
-import { requireAdmin } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { Shell } from '@/components/shell';
-
-export default async function AdminCertificatesPage() {
-  const admin = await requireAdmin();
-  const certificates = await db.certificate.findMany({ include: { user: true, course: true }, orderBy: { issuedAt: 'desc' } });
-  return <Shell user={admin}><div className="page-title"><p className="eyebrow">ADMIN</p><h1>Certificate records</h1><p>Every certificate is unique and can be publicly verified.</p></div><div className="table-wrap"><table><thead><tr><th>Learner</th><th>Course</th><th>Issued</th><th>Certificate</th></tr></thead><tbody>{certificates.map((certificate) => <tr key={certificate.id}><td>{certificate.user.name}<br/><small>{certificate.user.email}</small></td><td>{certificate.course.title}</td><td>{certificate.issuedAt.toLocaleDateString('en-GB')}</td><td><Link href={`/certificates/${certificate.code}`}>{certificate.code}</Link></td></tr>)}</tbody></table></div></Shell>;
-}
+import Link from 'next/link';import { revalidatePath } from 'next/cache';import { requireAdmin } from '@/lib/auth';import { db } from '@/lib/db';import { Shell } from '@/components/shell';
+export default async function AdminCertificatesPage(){const admin=await requireAdmin();async function remove(fd:FormData){'use server';await requireAdmin();await db.certificate.delete({where:{id:String(fd.get('id'))}});revalidatePath('/admin/certificates');}const certificates=await db.certificate.findMany({include:{user:true,course:true},orderBy:{issuedAt:'desc'}});return <Shell user={admin}><div className="page-title"><p className="eyebrow">ADMIN</p><h1>Certificate records</h1><p>View, verify and remove certificate records.</p></div><div className="table-wrap"><table><thead><tr><th>Learner</th><th>Course</th><th>Issued</th><th>Certificate</th><th></th></tr></thead><tbody>{certificates.map(c=><tr key={c.id}><td>{c.user.name}<br/><small>{c.user.email}</small></td><td>{c.course.title}</td><td>{c.issuedAt.toLocaleDateString('en-GB')}</td><td><Link href={`/certificates/${c.code}`}>{c.code}</Link></td><td><form action={remove}><input type="hidden" name="id" value={c.id}/><button className="ghost small danger-text">Delete record</button></form></td></tr>)}</tbody></table></div></Shell>}
