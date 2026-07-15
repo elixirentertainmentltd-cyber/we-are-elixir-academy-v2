@@ -11,21 +11,38 @@ enum Role {
   ADMIN
   LEARNER
 }
+
 enum UserStatus {
   PENDING
   ACTIVE
   DISABLED
   REJECTED
 }
+
 enum CourseStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
 }
+
 enum Difficulty {
   BEGINNER
   INTERMEDIATE
   ADVANCED
+}
+
+enum BlockType {
+  HEADING
+  PARAGRAPH
+  IMAGE
+  VIDEO
+  PDF
+  DOWNLOAD
+  QUOTE
+  TIP
+  WARNING
+  BUTTON
+  DIVIDER
 }
 
 model User {
@@ -51,6 +68,7 @@ model Session {
   expiresAt DateTime
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([expiresAt])
 }
@@ -66,23 +84,23 @@ model Category {
 }
 
 model Course {
-  id               String       @id @default(cuid())
-  title            String
-  slug             String       @unique
-  description      String       @db.Text
-  summary          String       @db.VarChar(240)
-  coverImage       String?
-  difficulty       Difficulty   @default(BEGINNER)
-  estimatedMinutes Int          @default(30)
-  status           CourseStatus @default(DRAFT)
-  featured         Boolean      @default(false)
-  certificateEnabled Boolean    @default(true)
-  categoryId       String
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  category         Category     @relation(fields: [categoryId], references: [id])
-  modules          Module[]
-  enrollments      Enrollment[]
+  id                 String       @id @default(cuid())
+  title              String
+  slug               String       @unique
+  description        String       @db.Text
+  summary            String       @db.VarChar(240)
+  coverImage         String?
+  difficulty         Difficulty   @default(BEGINNER)
+  estimatedMinutes   Int          @default(30)
+  status             CourseStatus @default(DRAFT)
+  featured           Boolean      @default(false)
+  certificateEnabled Boolean      @default(true)
+  categoryId         String
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  category           Category     @relation(fields: [categoryId], references: [id])
+  modules            Module[]
+  enrollments        Enrollment[]
 
   @@index([categoryId, status])
   @@index([featured, status])
@@ -96,6 +114,7 @@ model Module {
   courseId    String
   course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lessons     Lesson[]
+
   @@unique([courseId, position])
   @@index([courseId])
 }
@@ -114,9 +133,25 @@ model Lesson {
   moduleId         String
   module           Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   progress         Progress[]
+  blocks           LessonBlock[]
+
   @@unique([moduleId, slug])
   @@unique([moduleId, position])
   @@index([moduleId])
+}
+
+model LessonBlock {
+  id        String    @id @default(cuid())
+  lessonId  String
+  type      BlockType
+  position  Int
+  data      Json
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  lesson    Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, position])
+  @@index([lessonId])
 }
 
 model Enrollment {
@@ -128,6 +163,7 @@ model Enrollment {
   completedAt  DateTime?
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
   @@unique([userId, courseId])
   @@index([userId, lastOpenedAt])
 }
@@ -141,6 +177,7 @@ model Progress {
   updatedAt   DateTime @updatedAt
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
   @@unique([userId, lessonId])
   @@index([userId, completed])
 }

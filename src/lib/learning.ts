@@ -11,5 +11,5 @@ export async function completedLessonIds(userId:string, courseId?:string) {
     where:{userId,completed:true,...(courseId?{lesson:{module:{courseId}}}:{})},
     select:{lessonId:true}
   });
-  return new Set(rows.map(row=>row.lessonId));
+  return new Set<string>(rows.map((row:{lessonId:string})=>row.lessonId));
 }

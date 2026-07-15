@@ -1,4 +1,4 @@
-import { PrismaClient, Role, UserStatus, CourseStatus, Difficulty } from '@prisma/client';
+import { PrismaClient, Role, UserStatus, CourseStatus, Difficulty, BlockType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 const db = new PrismaClient();
 
@@ -37,7 +37,7 @@ async function seedLearning() {
       difficulty:Difficulty.BEGINNER, estimatedMinutes:25, status:CourseStatus.PUBLISHED, featured:true, categoryId:category.id
     }
   });
-  const module = await db.module.upsert({
+  const courseModule = await db.module.upsert({
     where:{courseId_position:{courseId:course.id,position:1}},
     update:{title:'Getting started'},
     create:{courseId:course.id,title:'Getting started',description:'Everything you need for your first steps.',position:1}
@@ -49,7 +49,12 @@ async function seedLearning() {
   ];
   for (let i=0;i<lessons.length;i++) {
     const [title,slug,summary,content,estimatedMinutes]=lessons[i] as [string,string,string,string,number];
-    await db.lesson.upsert({where:{moduleId_slug:{moduleId:module.id,slug}},update:{title,summary,content,estimatedMinutes},create:{moduleId:module.id,title,slug,summary,content,estimatedMinutes,position:i+1}});
+    const lesson = await db.lesson.upsert({where:{moduleId_slug:{moduleId:courseModule.id,slug}},update:{title,summary,content,estimatedMinutes},create:{moduleId:courseModule.id,title,slug,summary,content,estimatedMinutes,position:i+1}});
+    await db.lessonBlock.upsert({
+      where: { lessonId_position: { lessonId: lesson.id, position: 1 } },
+      update: { type: BlockType.PARAGRAPH, data: { text: content } },
+      create: { lessonId: lesson.id, position: 1, type: BlockType.PARAGRAPH, data: { text: content } }
+    });
   }
 }
 
