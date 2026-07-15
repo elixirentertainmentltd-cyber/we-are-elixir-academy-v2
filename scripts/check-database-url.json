@@ -1,0 +1,23 @@
+const value = process.env.DATABASE_URL;
+
+if (!value) {
+  console.error("DATABASE_URL is missing");
+  process.exit(1);
+}
+
+try {
+  const url = new URL(value);
+
+  console.log("Database connection settings:");
+  console.log("User:", decodeURIComponent(url.username));
+  console.log("Host:", url.hostname);
+  console.log("Port:", url.port || "3306");
+  console.log("Database:", url.pathname.replace(/^\//, ""));
+  console.log(
+    "Password length:",
+    decodeURIComponent(url.password).length
+  );
+} catch (error) {
+  console.error("DATABASE_URL cannot be parsed:", error.message);
+  process.exit(1);
+}
