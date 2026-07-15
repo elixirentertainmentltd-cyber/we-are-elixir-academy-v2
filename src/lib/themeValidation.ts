@@ -1,17 +1,48 @@
 import { DEFAULT_THEME } from "./theme";
 
-function luminance(hex: string) {
+export interface ThemeSettings {
+  mode?: "light" | "dark" | "auto";
+
+  primary?: string;
+  secondary?: string;
+
+  background?: string;
+  surface?: string;
+  card?: string;
+
+  text?: string;
+  textSecondary?: string;
+
+  heroBackground?: string;
+  heroTitle?: string;
+  heroText?: string;
+
+  border?: string;
+
+  buttonBackground?: string;
+  buttonText?: string;
+
+  success?: string;
+  warning?: string;
+  danger?: string;
+
+  font?: string;
+  language?: string;
+}
+
+function luminance(hex: string): number {
   const rgb = hex.replace("#", "");
 
   const values = [
     parseInt(rgb.substring(0, 2), 16),
     parseInt(rgb.substring(2, 4), 16),
     parseInt(rgb.substring(4, 6), 16),
-  ].map(v => {
-    v /= 255;
-    return v <= 0.03928
-      ? v / 12.92
-      : Math.pow((v + 0.055) / 1.055, 2.4);
+  ].map((value) => {
+    value /= 255;
+
+    return value <= 0.03928
+      ? value / 12.92
+      : Math.pow((value + 0.055) / 1.055, 2.4);
   });
 
   return (
@@ -21,7 +52,7 @@ function luminance(hex: string) {
   );
 }
 
-function contrast(a: string, b: string) {
+function contrast(a: string, b: string): number {
   const l1 = luminance(a);
   const l2 = luminance(b);
 
@@ -31,19 +62,34 @@ function contrast(a: string, b: string) {
   );
 }
 
-export function validateTheme(theme: any) {
-  const t = { ...DEFAULT_THEME, ...theme };
+export function validateTheme(
+  theme: Partial<ThemeSettings>
+): ThemeSettings {
 
-  if (contrast(t.background, t.text) < 4.5) {
+  const t: ThemeSettings = {
+    ...DEFAULT_THEME,
+    ...theme,
+  };
+
+  if (
+    t.background &&
+    t.text &&
+    contrast(t.background, t.text) < 4.5
+  ) {
     t.text = "#0F172A";
   }
 
-  if (contrast(t.background, t.textSecondary) < 3) {
+  if (
+    t.background &&
+    t.textSecondary &&
+    contrast(t.background, t.textSecondary) < 3
+  ) {
     t.textSecondary = "#475569";
   }
 
+  // Hero is always readable
   t.heroTitle = "#FFFFFF";
-  t.heroText = "rgba(255,255,255,0.92)";
+  t.heroText = "rgba(255,255,255,.92)";
   t.buttonText = "#FFFFFF";
 
   return t;
