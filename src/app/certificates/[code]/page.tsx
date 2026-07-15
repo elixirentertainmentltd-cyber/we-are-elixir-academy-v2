@@ -1,15 +1,72 @@
 import Link from 'next/link';
-import { Download, Printer, ShieldCheck } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { requireActiveUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { Shell } from '@/components/shell';
 
-export default async function CertificatePage({ params }: { params: Promise<{ code: string }> }) {
+function certificateDate(value: Date) {
+  return value.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).toUpperCase();
+}
+
+export default async function CertificatePage({
+  params,
+}: {
+  params: Promise<{ code: string }>;
+}) {
   const user = await requireActiveUser();
   const { code } = await params;
-  const certificate = await db.certificate.findUnique({ where: { code }, include: { user: true, course: true } });
-  if (!certificate || (certificate.userId !== user.id && user.role !== 'ADMIN')) notFound();
 
-  return <Shell user={user}><div className="certificate-actions"><Link className="ghost" href="/certificates">Back to certificates</Link><Link className="primary" href={`/certificates/${code}/download`}><Download /> Download PDF</Link></div><section className="certificate-sheet"><div className="certificate-border"><p className="eyebrow">WE ARE ELIXIR ACADEMY</p><h1>Certificate of Completion</h1><p>This certifies that</p><h2>{certificate.user.name}</h2><p>has successfully completed</p><h3>{certificate.course.title}</h3><div className="certificate-meta"><span><strong>Issued</strong>{certificate.issuedAt.toLocaleDateString('en-GB')}</span><span><strong>Certificate</strong>{certificate.code}</span></div><div className="certificate-seal"><ShieldCheck /><span>Verified achievement</span></div><p className="certificate-signature">We Are Elixir Academy</p></div></section><p className="centre">Verification: {process.env.APP_URL || ''}/verify/{certificate.code}</p></Shell>;
+  const certificate = await db.certificate.findUnique({
+    where: { code },
+    include: { user: true, course: true },
+  });
+
+  if (!certificate || (certificate.userId !== user.id && user.role !== 'ADMIN')) {
+    notFound();
+  }
+
+  const appUrl = (process.env.APP_URL || 'https://academy.weareelixir.co.uk').replace(/\/$/, '');
+  const verificationUrl = `${appUrl}/verify/${certificate.code}`;
+
+  return (
+    <Shell user={user}>
+      <div className="certificate-actions">
+        <Link className="ghost" href="/certificates">
+          Back to certificates
+        </Link>
+        <Link className="primary" href={`/certificates/${certificate.code}/download`}>
+          <Download /> Download PDF
+        </Link>
+      </div>
+
+      <section className="official-certificate-wrap" aria-label="Certificate of achievement">
+        <div className="official-certificate">
+          <img
+            className="official-certificate-template"
+            src="/certificates/elixir-academy-certificate.png"
+            alt="We Are Elixir Academy certificate template"
+          />
+
+          <div className="official-certificate-name">{certificate.user.name}</div>
+          <div className="official-certificate-course">{certificate.course.title}</div>
+          <div className="official-certificate-date">{certificateDate(certificate.issuedAt)}</div>
+
+          <div className="official-certificate-signature">
+            <strong>Ryan Evans</strong>
+            <span>WE ARE ELIXIR</span>
+          </div>
+
+          <div className="official-certificate-code">
+            CERTIFICATE NO. {certificate.code}
+          </div>
+          <div className="official-certificate-verify">VERIFY: {verificationUrl}</div>
+        </div>
+      </section>
+    </Shell>
+  );
 }
