@@ -1,23 +1,24 @@
 # We Are Elixir Academy V2
 
-Milestone 1 provides a clean Next.js foundation with Prisma/MySQL, API-route authentication, admin approval, secure database-backed sessions, a responsive dashboard, admin user management and health checks.
+Milestone 2 adds the core learning platform: course library, categories, course pages, modules, lessons, learner progress, search and a redesigned dashboard.
 
-## Local setup
-1. Copy `.env.example` to `.env` and enter your values.
-2. Run `npm install`.
-3. Run `npm run db:push`.
-4. Run `npm run db:seed`.
-5. Run `npm run dev`.
+## Hostinger environment
 
-## Hostinger
-Set `DATABASE_URL`, `APP_URL`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` in environment variables. Use this build command for the first deployment:
+The working Hostinger database integration currently uses:
 
-`npm run hostinger-build`
+- `DATABASE_URL_V2`
+- `APP_URL`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD` only when deliberately running the seed command
 
-After the database has been created and seeded successfully, the normal build command can be `npm run build`.
+## Deploying this milestone
 
-Health routes:
-- `/api/health` checks the app.
-- `/api/db-health` checks the database without exposing credentials.
+This milestone changes the Prisma schema and adds starter learning content. For the first deployment of this ZIP, temporarily set the `build` script in `package.json` to `npm run hostinger-build`, or run `npm run hostinger-build` through Hostinger. After the database sync and seed succeed, change the normal build back to `prisma generate && next build`.
 
-Never commit `.env` or real passwords.
+## Useful routes
+
+- `/dashboard`
+- `/courses`
+- `/admin/users`
+- `/api/health`
+- `/api/db-health`

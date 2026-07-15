@@ -7,17 +7,10 @@ datasource db {
   url      = env("DATABASE_URL_V2")
 }
 
-enum Role {
-  ADMIN
-  LEARNER
-}
-
-enum UserStatus {
-  PENDING
-  ACTIVE
-  DISABLED
-  REJECTED
-}
+enum Role { ADMIN LEARNER }
+enum UserStatus { PENDING ACTIVE DISABLED REJECTED }
+enum CourseStatus { DRAFT PUBLISHED ARCHIVED }
+enum Difficulty { BEGINNER INTERMEDIATE ADVANCED }
 
 model User {
   id           String     @id @default(cuid())
@@ -29,6 +22,8 @@ model User {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   sessions     Session[]
+  progress     Progress[]
+  enrollments  Enrollment[]
 
   @@index([status])
 }
@@ -40,7 +35,96 @@ model Session {
   expiresAt DateTime
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@index([userId])
   @@index([expiresAt])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?  @db.Text
+  icon        String   @default("Sparkles")
+  createdAt   DateTime @default(now())
+  courses     Course[]
+}
+
+model Course {
+  id               String       @id @default(cuid())
+  title            String
+  slug             String       @unique
+  description      String       @db.Text
+  summary          String       @db.VarChar(240)
+  coverImage       String?
+  difficulty       Difficulty   @default(BEGINNER)
+  estimatedMinutes Int          @default(30)
+  status           CourseStatus @default(DRAFT)
+  featured         Boolean      @default(false)
+  certificateEnabled Boolean    @default(true)
+  categoryId       String
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  category         Category     @relation(fields: [categoryId], references: [id])
+  modules          Module[]
+  enrollments      Enrollment[]
+
+  @@index([categoryId, status])
+  @@index([featured, status])
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  position    Int
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  @@unique([courseId, position])
+  @@index([courseId])
+}
+
+model Lesson {
+  id               String   @id @default(cuid())
+  title            String
+  slug             String
+  summary          String?  @db.VarChar(240)
+  content          String   @db.LongText
+  videoUrl         String?
+  resourceUrl      String?
+  estimatedMinutes Int      @default(5)
+  position         Int
+  required         Boolean  @default(true)
+  moduleId         String
+  module           Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress         Progress[]
+  @@unique([moduleId, slug])
+  @@unique([moduleId, position])
+  @@index([moduleId])
+}
+
+model Enrollment {
+  id           String   @id @default(cuid())
+  userId       String
+  courseId     String
+  enrolledAt   DateTime @default(now())
+  lastOpenedAt DateTime @default(now())
+  completedAt  DateTime?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  @@unique([userId, courseId])
+  @@index([userId, lastOpenedAt])
+}
+
+model Progress {
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  @@unique([userId, lessonId])
+  @@index([userId, completed])
 }
