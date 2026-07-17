@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
 import { db } from '@/lib/db';
+import { sendPushToUser } from '@/lib/push';
 
 function certificateCode() {
   return `WAE-${new Date().getFullYear()}-${randomBytes(5).toString('hex').toUpperCase()}`;
@@ -10,7 +11,9 @@ export async function issueCertificate(userId: string, courseId: string) {
   if (!course?.certificateEnabled) return null;
   const existing = await db.certificate.findUnique({ where: { userId_courseId: { userId, courseId } } });
   if (existing) return existing;
-  return db.certificate.create({ data: { userId, courseId, code: certificateCode() } });
+  const certificate = await db.certificate.create({ data: { userId, courseId, code: certificateCode() } });
+  await sendPushToUser(userId, { title: 'Certificate earned', body: 'Your new Academy certificate is ready.', url: `/certificates/${certificate.code}` }).catch(() => undefined);
+  return certificate;
 }
 
 export async function syncCourseCompletion(userId: string, courseId: string) {

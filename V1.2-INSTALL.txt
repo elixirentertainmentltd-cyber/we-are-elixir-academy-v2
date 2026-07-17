@@ -1,0 +1,13 @@
+WE ARE ELIXIR ACADEMY V1.2
+
+1. Copy this release over the existing project.
+2. Keep your existing .git folder and environment variables.
+3. Add these Hostinger environment variables:
+   NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
+   VAPID_PRIVATE_KEY=...
+   VAPID_SUBJECT=mailto:info@weareelixir.co.uk
+4. Commit and push. Prisma db push will add the PushSubscription table.
+5. Open Settings and enable notifications on each device.
+
+Generate keys locally with:
+   npx web-push generate-vapid-keys

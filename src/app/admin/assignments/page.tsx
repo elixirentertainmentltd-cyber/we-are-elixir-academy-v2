@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { Shell } from '@/components/shell';
 import { audit } from '@/lib/audit';
+import { sendPushToUser } from '@/lib/push';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,8 @@ export default async function AssignmentAdmin() {
   async function review(formData: FormData) {
     'use server';
     const admin=await requireAdmin(); const id=String(formData.get('id'));
-    await db.assignmentSubmission.update({where:{id},data:{status:String(formData.get('status')) as 'APPROVED'|'NEEDS_CHANGES'|'REJECTED',grade:String(formData.get('grade')||'')||null,feedback:String(formData.get('feedback')||''),reviewedAt:new Date()}});
+    const reviewed=await db.assignmentSubmission.update({where:{id},data:{status:String(formData.get('status')) as 'APPROVED'|'NEEDS_CHANGES'|'REJECTED',grade:String(formData.get('grade')||'')||null,feedback:String(formData.get('feedback')||''),reviewedAt:new Date()},include:{assignment:true}});
+    await sendPushToUser(reviewed.userId,{title:'Assignment reviewed',body:`${reviewed.assignment.title} has been reviewed.`,url:'/assignments'}).catch(()=>undefined);
     await audit(admin.id,'REVIEW','AssignmentSubmission',id); revalidatePath('/admin/assignments');
   }
   const [courses,assignments,submissions]=await Promise.all([

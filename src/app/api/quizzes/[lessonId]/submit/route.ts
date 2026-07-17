@@ -3,6 +3,7 @@ import { requireActiveUser } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { syncCourseCompletion } from '@/lib/quiz';
 import { z } from 'zod';
+import { sendPushToUser } from '@/lib/push';
 
 const schema = z.object({ answers: z.array(z.object({ questionId: z.string(), optionId: z.string() })) });
 
@@ -29,6 +30,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ les
   if (passed) {
     await db.progress.upsert({ where: { userId_lessonId: { userId: user.id, lessonId } }, update: { completed: true, completedAt: new Date() }, create: { userId: user.id, lessonId, completed: true, completedAt: new Date() } });
     await syncCourseCompletion(user.id, quiz.lesson.module.courseId);
+    await sendPushToUser(user.id, { title: 'Quiz passed', body: `You scored ${score}% on ${quiz.title}.`, url: `/courses` }).catch(() => undefined);
   }
   return NextResponse.json({ score, passed, feedback });
 }
