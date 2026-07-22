@@ -1,0 +1,21 @@
+WE ARE ELIXIR ACADEMY - RAINBOW BRAND UPDATE
+
+Changes included:
+- New transparent Academy logo in the header and footer
+- Language selector removed from Settings
+- English fixed as the site language
+- Dark rainbow visual theme across navigation, cards, buttons, forms, dashboards and course areas
+- Rainbow PWA theme colours
+- Existing Academy features and database schema retained
+
+UPLOAD / UPGRADE
+1. Back up your current Academy files and database.
+2. Upload the contents of this ZIP over the existing Academy project.
+3. Keep your existing .env file. This ZIP does not replace it.
+4. Run: npm install
+5. Run your normal deployment/build command.
+
+Hostinger build command already included in package.json:
+   npm run hostinger-build
+
+Do not upload a separate node_modules folder. npm install recreates it for the server.
